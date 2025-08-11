@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NutriTrack - Food & Calorie Tracker</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card h2 {
+        color: #4a5568;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+      }
+
+      .search-section {
+        margin-bottom: 25px;
+      }
+
+      .search-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .search-btn,
+      .add-btn {
+        background: linear-gradient(45deg, #48bb78, #38a169);
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .search-btn:hover,
+      .add-btn:hover {
+        background: linear-gradient(45deg, #38a169, #2f855a);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+      }
+
+      .food-results {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f7fafc;
+      }
+
+      .food-item {
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.3s ease;
+      }
+
+      .food-item:hover {
+        background-color: #edf2f7;
+      }
+
+      .food-item:last-child {
+        border-bottom: none;
+      }
+
+      .food-info {
+        flex: 1;
+      }
+
+      .food-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 5px;
+      }
+
+      .food-calories {
+        color: #718096;
+        font-size: 0.9rem;
+      }
+
+      .quantity-input {
+        width: 80px;
+        padding: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        text-align: center;
+        margin-right: 10px;
+      }
+
+      .daily-log {
+        background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+        color: #2d3748;
+      }
+
+      .daily-summary {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+        text-align: center;
+        padding: 25px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+
+      .calories-display {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .logged-foods {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .logged-item {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .delete-btn {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background-color 0.3s ease;
+      }
+
+      .delete-btn:hover {
+        background: #c53030;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #718096;
+      }
+
+      .error {
+        background: #fed7d7;
+        color: #c53030;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
+
+      .api-note {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .search-bar {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🥗 NutriTrack</h1>
+        <p>Your Professional Food & Calorie Companion</p>
+      </div>
+
+      <div class="main-content">
+        <div class="card">
+          <h2>🔍 Search Foods</h2>
+          <div class="search-section">
+            <div class="search-bar">
+              <input
+                type="text"
+                class="search-input"
+                id="foodSearch"
+                placeholder="Search for foods (e.g., apple, chicken breast)..."
+              />
+              <button class="search-btn" onclick="searchFoods()">Search</button>
+            </div>
+            <div
+              id="searchResults"
+              class="food-results"
+              style="display: none"
+            ></div>
+            <div id="loading" class="loading" style="display: none">
+              🔄 Searching foods...
+            </div>
+            <div id="error" class="error" style="display: none"></div>
+          </div>
+        </div>
+
+        <div class="card daily-log">
+          <h2>📊 Today's Log</h2>
+          <div class="daily-summary">
+            <div class="calories-display" id="totalCalories">0</div>
+            <div>Total Calories</div>
+          </div>
+          <div class="logged-foods" id="loggedFoods">
+            <p style="text-align: center; color: #666; margin-top: 50px">
+              🍽️ No foods logged yet today.<br />
+              Start by searching and adding foods!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="api-note">
+        💡 This demo uses sample food data. For a production version, integrate
+        with the Edamam Food Database API for comprehensive nutrition
+        information.
+      </div>
+    </div>
+
+    <script>
+      // Sample food database (in a real app, this would come from the Edamam API)
+      const sampleFoods = [
+        { name: "Apple", calories: 52, unit: "per 100g" },
+        { name: "Banana", calories: 89, unit: "per 100g" },
+        { name: "Chicken Breast", calories: 165, unit: "per 100g" },
+        { name: "Brown Rice", calories: 111, unit: "per 100g" },
+        { name: "Broccoli", calories: 34, unit: "per 100g" },
+        { name: "Salmon", calories: 208, unit: "per 100g" },
+        { name: "Sweet Potato", calories: 86, unit: "per 100g" },
+        { name: "Greek Yogurt", calories: 59, unit: "per 100g" },
+        { name: "Almonds", calories: 579, unit: "per 100g" },
+        { name: "Spinach", calories: 23, unit: "per 100g" },
+        { name: "Oatmeal", calories: 68, unit: "per 100g" },
+        { name: "Eggs", calories: 155, unit: "per 100g" },
+        { name: "Avocado", calories: 160, unit: "per 100g" },
+        { name: "Orange", calories: 47, unit: "per 100g" },
+        { name: "Quinoa", calories: 120, unit: "per 100g" },
+      ];
+
+      let loggedFoods = [];
+      let searchTimeout;
+
+      // Load logged foods from memory on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        updateLoggedFoodsDisplay();
+
+        // Add enter key support for search
+        document
+          .getElementById("foodSearch")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              searchFoods();
+            }
+          });
+      });
+
+      function searchFoods() {
+        const query = document.getElementById("foodSearch").value.trim();
+        const resultsDiv = document.getElementById("searchResults");
+        const loadingDiv = document.getElementById("loading");
+        const errorDiv = document.getElementById("error");
+
+        // Clear previous results and errors
+        errorDiv.style.display = "none";
+        resultsDiv.style.display = "none";
+
+        if (!query) {
+          showError("Please enter a food to search for");
+          return;
+        }
+
+        // Show loading
+        loadingDiv.style.display = "block";
+
+        // Simulate API delay
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          loadingDiv.style.display = "none";
+
+          // Filter sample foods based on search query
+          const filteredFoods = sampleFoods.filter((food) =>
+            food.name.toLowerCase().includes(query.toLowerCase())
+          );
+
+          if (filteredFoods.length === 0) {
+            showError(
+              `No foods found matching "${query}". Try searching for common foods like apple, chicken, rice, etc.`
+            );
+            return;
+          }
+
+          displaySearchResults(filteredFoods);
+        }, 800); // Simulate network delay
+      }
+
+      function displaySearchResults(foods) {
+        const resultsDiv = document.getElementById("searchResults");
+
+        resultsDiv.innerHTML = foods
+          .map(
+            (food) => `
+                <div class="food-item">
+                    <div class="food-info">
+                        <div class="food-name">${food.name}</div>
+                        <div class="food-calories">${food.calories} calories ${food.unit}</div>
+                    </div>
+                    <div>
+                        <input type="number" class="quantity-input" placeholder="100" min="1" max="1000" value="100" id="qty-${food.name}">
+                        <button class="add-btn" onclick="addFood('${food.name}', ${food.calories})">Add</button>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        resultsDiv.style.display = "block";
+      }
+
+      function addFood(name, caloriesPer100g) {
+        const quantityInput = document.getElementById(`qty-${name}`);
+        const quantity = parseInt(quantityInput.value) || 100;
+
+        const totalCalories = Math.round((caloriesPer100g * quantity) / 100);
+
+        const foodEntry = {
+          id: Date.now() + Math.random(),
+          name: name,
+          quantity: quantity,
+          calories: totalCalories,
+          timestamp: new Date().toLocaleTimeString(),
+        };
+
+        loggedFoods.push(foodEntry);
+        updateLoggedFoodsDisplay();
+
+        // Clear search
+        document.getElementById("foodSearch").value = "";
+        document.getElementById("searchResults").style.display = "none";
+
+        // Show success animation
+        showSuccessMessage(
+          `Added ${quantity}g of ${name} (${totalCalories} calories)`
+        );
+      }
+
+      function removeFood(id) {
+        loggedFoods = loggedFoods.filter((food) => food.id !== id);
+        updateLoggedFoodsDisplay();
+      }
+
+      function updateLoggedFoodsDisplay() {
+        const loggedFoodsDiv = document.getElementById("loggedFoods");
+        const totalCaloriesDiv = document.getElementById("totalCalories");
+
+        if (loggedFoods.length === 0) {
+          loggedFoodsDiv.innerHTML = `
+                    <p style="text-align: center; color: #666; margin-top: 50px;">
+                        🍽️ No foods logged yet today.<br>
+                        Start by searching and adding foods!
+                    </p>
+                `;
+          totalCaloriesDiv.textContent = "0";
+          return;
+        }
+
+        const totalCalories = loggedFoods.reduce(
+          (sum, food) => sum + food.calories,
+          0
+        );
+        totalCaloriesDiv.textContent = totalCalories.toLocaleString();
+
+        loggedFoodsDiv.innerHTML = loggedFoods
+          .map(
+            (food) => `
+                <div class="logged-item">
+                    <div>
+                        <div style="font-weight: 600;">${food.name}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">${food.quantity}g • ${food.calories} cal • ${food.timestamp}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeFood(${food.id})">Remove</button>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      function showError(message) {
+        const errorDiv = document.getElementById("error");
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+      }
+
+      function showSuccessMessage(message) {
+        // Create temporary success message
+        const successDiv = document.createElement("div");
+        successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #48bb78, #38a169);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+        successDiv.textContent = `✅ ${message}`;
+
+        document.body.appendChild(successDiv);
+
+        setTimeout(() => {
+          successDiv.style.animation = "slideOut 0.3s ease";
+          setTimeout(() => successDiv.remove(), 300);
+        }, 3000);
+      }
+
+      // Add CSS animations
+      const style = document.createElement("style");
+      style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+      document.head.appendChild(style);
+
+      /*
+        // Edamam API Integration Example (commented out - requires API key)
+        // Sign up at https://developer.edamam.com/food-database-api for free API access
+        
+        async function searchFoodsAPI(query) {
+            const APP_ID = 'your_app_id';
+            const APP_KEY = 'your_app_key';
+            const url = `https://api.edamam.com/api/food-database/v2/parser?ingr=${encodeURIComponent(query)}&app_id=${APP_ID}&app_key=${APP_KEY}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.hints.map(hint => ({
+                    name: hint.food.label,
+                    calories: Math.round(hint.food.nutrients.ENERC_KCAL || 0),
+                    unit: 'per 100g'
+                }));
+            } catch (error) {
+                console.error('API Error:', error);
+                throw new Error('Failed to fetch food data');
+            }
+        }
+        */
+    </script>
+  </body>
+</html>
